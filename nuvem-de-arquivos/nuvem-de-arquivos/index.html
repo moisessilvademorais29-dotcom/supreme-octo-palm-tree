@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nuvem de Arquivos</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f6fb;--card:#fff;--tx:#1b2333;--mut:#6b7488;--pri:#2f6fed;--bd:#e1e6f0;--err:#d33a3a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#12151c;--card:#1b2029;--tx:#e8ecf4;--mut:#98a2b8;--pri:#5b8cff;--bd:#2c3442;--err:#ff6b6b}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#12151c;--card:#1b2029;--tx:#e8ecf4;--mut:#98a2b8;--pri:#5b8cff;--bd:#2c3442;--err:#ff6b6b}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.hide{display:none!important}
+.login{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.logo{font-size:40px;text-align:center}
+h1{font-size:22px;text-align:center;margin:6px 0 4px}
+.sub{color:var(--mut);text-align:center;margin:0 0 22px;font-size:14px}
+label{display:block;font-size:13px;color:var(--mut);margin:12px 0 4px}
+input[type=text],input[type=password]{width:100%;padding:11px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px}
+button{cursor:pointer;border:0;border-radius:10px;padding:11px 16px;font-size:15px;font-weight:600;background:var(--pri);color:#fff}
+button.ghost{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+button.sm{padding:6px 10px;font-size:13px}
+.full{width:100%;margin-top:18px}
+.err{color:var(--err);font-size:14px;text-align:center;min-height:20px;margin-top:10px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5}
+header b{font-size:18px}
+main{max-width:900px;margin:0 auto;padding:20px}
+.drop{border:2px dashed var(--bd);border-radius:14px;padding:30px 16px;text-align:center;background:var(--card);color:var(--mut)}
+.drop.on{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 8%,var(--card))}
+.drop p{margin:6px 0 12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 12px;align-items:center}
+.bar input{flex:1;min-width:140px;padding:9px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font-size:15px}
+.tab{background:var(--card);color:var(--tx);border:1px solid var(--bd);padding:8px 12px;font-size:14px}
+.tab.act{background:var(--pri);color:#fff;border-color:var(--pri)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.f{background:var(--card);border:1px solid var(--bd);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.th{height:120px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:44px;cursor:pointer}
+.th img{width:100%;height:100%;object-fit:cover}
+.fi{padding:10px 12px;flex:1}
+.fn{font-size:14px;font-weight:600;word-break:break-word}
+.fm{font-size:12px;color:var(--mut)}
+.fa{display:flex;gap:6px;padding:0 12px 12px}
+.empty{text-align:center;color:var(--mut);padding:40px 0}
+.note{font-size:12px;color:var(--mut);text-align:center;margin-top:20px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;flex-direction:column;z-index:20}
+.modal .top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0px));color:#fff}
+.modal .body{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 12px 12px}
+.modal img{max-width:100%;max-height:100%}
+.modal iframe{width:100%;height:100%;border:0;background:#fff;border-radius:8px}
+</style>
+</head>
+<body>
+
+<section id="login" class="login">
+  <form class="box" id="lf" onsubmit="return false">
+    <div class="logo">☁️</div>
+    <h1>Nuvem de Arquivos</h1>
+    <p class="sub">Entre para acessar seus PDFs e imagens</p>
+    <label for="u">Login</label>
+    <input type="text" id="u" autocomplete="username" autocapitalize="off">
+    <label for="p">Senha</label>
+    <input type="password" id="p" autocomplete="current-password">
+    <button class="full" id="lb" type="submit">Entrar</button>
+    <div class="err" id="le"></div>
+  </form>
+</section>
+
+<section id="app" class="hide">
+  <header>
+    <b>☁️ Minha Nuvem</b>
+    <span><span id="usage" class="fm"></span> <button class="ghost sm" id="out">Sair</button></span>
+  </header>
+  <main>
+    <div class="drop" id="drop">
+      <div style="font-size:36px">📤</div>
+      <p>Arraste PDFs e imagens aqui ou</p>
+      <button id="pick">Escolher arquivos</button>
+      <input type="file" id="fi" class="hide" multiple accept="application/pdf,image/*">
+      <div class="fm" id="st" style="margin-top:10px"></div>
+    </div>
+    <div class="bar">
+      <input type="text" id="q" placeholder="Buscar arquivo…">
+      <button class="tab act" data-t="all">Todos</button>
+      <button class="tab" data-t="img">Imagens</button>
+      <button class="tab" data-t="pdf">PDFs</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty hide" id="empty">Nenhum arquivo ainda. Envie o primeiro! ☝️</div>
+    <p class="note" id="mode"></p>
+  </main>
+</section>
+
+<div class="modal hide" id="modal">
+  <div class="top"><b id="mt"></b><button class="ghost sm" id="mc" style="color:#fff;border-color:#fff">Fechar ✕</button></div>
+  <div class="body" id="mb"></div>
+</div>
+
+<script>
+const OK_HASH="1075a2d6732bdf8bc36d35a9f5a168dbd35e8d8cfade1dcd48eb0e5390a97c4f";
+const $=id=>document.getElementById(id);
+let files=[],tab="all",backend=null,mode="local";
+
+async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function ss(k,v){try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v)}catch(e){return null}}
+
+/* ---------- Login ---------- */
+$("lf").addEventListener("submit",async()=>{
+  const h=await sha($("u").value.trim()+":"+$("p").value);
+  if(h===OK_HASH){ss("ok","1");$("le").textContent="";enter()}
+  else{$("le").textContent="Login ou senha incorretos.";$("p").value=""}
+});
+$("out").onclick=()=>{try{sessionStorage.removeItem("ok")}catch(e){}$("app").classList.add("hide");$("login").classList.remove("hide");$("p").value=""};
+function enter(){$("login").classList.add("hide");$("app").classList.remove("hide");init()}
+
+/* ---------- Armazenamento: nuvem (assets+db) ou local (IndexedDB) ---------- */
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("nuvem",1);r.onupgradeneeded=()=>r.result.createObjectStore("f",{keyPath:"id"});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+const local={
+  async list(){const d=await idb();return new Promise(r=>{const q=d.transaction("f").objectStore("f").getAll();q.onsuccess=()=>r(q.result.map(x=>({...x,url:URL.createObjectURL(x.blob)})))})},
+  async add(file){const d=await idb();const m={id:"l"+Date.now()+Math.random().toString(36).slice(2,6),name:file.name,type:file.type,size:file.size,date:Date.now(),blob:file};
+    return new Promise(r=>{d.transaction("f","readwrite").objectStore("f").put(m).onsuccess=()=>r()})},
+  async del(f){const d=await idb();return new Promise(r=>{d.transaction("f","readwrite").objectStore("f").delete(f.id).onsuccess=()=>r()})}
+};
+function cloud(assets,db){
+  const col=db.collection("arquivos");
+  return{
+    async list(){const s=await col.get();const out=[];s.forEach(d=>out.push({id:d.id,...d.data()}));return out.map(x=>({...x,url:"/_blob/"+x.asset}))},
+    async add(file){const a=await assets.upload(file);await col.doc("a"+Date.now()+Math.random().toString(36).slice(2,6)).set({asset:a.id,name:file.name,type:file.type,size:file.size,date:Date.now()})},
+    async del(f){await col.doc(f.id).delete();try{await assets.delete(f.asset)}catch(e){}}
+  }
+}
+async function init(){
+  if(backend)return refresh();
+  try{
+    if(window.claude){
+      const [a,d]=await Promise.race([Promise.all([claude.use("assets"),claude.use("db")]),new Promise((_,j)=>setTimeout(j,6000))]);
+      if(a&&d){backend=cloud(a,d);mode="cloud"}
+    }
+  }catch(e){}
+  if(!backend){backend=local}
+  $("mode").textContent=mode==="cloud"?"☁️ Arquivos salvos na nuvem do artefato.":"💾 Modo local: os arquivos ficam salvos apenas neste navegador.";
+  refresh();
+}
+
+/* ---------- UI ---------- */
+const fmt=n=>n<1024?n+" B":n<1048576?(n/1024).toFixed(1)+" KB":(n/1048576).toFixed(1)+" MB";
+const isImg=f=>(f.type||"").startsWith("image/"),isPdf=f=>f.type==="application/pdf";
+async function refresh(){
+  try{files=await backend.list()}catch(e){files=[];$("st").textContent="Erro ao carregar arquivos."}
+  files.sort((a,b)=>b.date-a.date);render();
+}
+function render(){
+  const q=$("q").value.toLowerCase();
+  const l=files.filter(f=>(tab==="all"||(tab==="img"&&isImg(f))||(tab==="pdf"&&isPdf(f)))&&f.name.toLowerCase().includes(q));
+  const g=$("grid");g.textContent="";
+  $("empty").classList.toggle("hide",l.length>0);
+  $("usage").textContent=files.length+" arquivo(s) · "+fmt(files.reduce((s,f)=>s+f.size,0));
+  l.forEach(f=>{
+    const c=document.createElement("div");c.className="f";
+    const t=document.createElement("div");t.className="th";
+    if(isImg(f)){const i=document.createElement("img");i.src=f.url;i.alt=f.name;t.appendChild(i)}else t.textContent="📄";
+    t.onclick=()=>view(f);
+    const fi=document.createElement("div");fi.className="fi";
+    const n=document.createElement("div");n.className="fn";n.textContent=f.name;
+    const m=document.createElement("div");m.className="fm";m.textContent=fmt(f.size)+" · "+new Date(f.date).toLocaleDateString("pt-BR");
+    fi.append(n,m);
+    const a=document.createElement("div");a.className="fa";
+    const v=document.createElement("button");v.className="sm";v.textContent="Abrir";v.onclick=()=>view(f);
+    const d=document.createElement("button");d.className="sm ghost";d.textContent="Excluir";
+    d.onclick=async()=>{if(confirm("Excluir \""+f.name+"\"?")){await backend.del(f);refresh()}};
+    a.append(v,d);c.append(t,fi,a);g.appendChild(c);
+  });
+}
+function view(f){
+  $("mt").textContent=f.name;const b=$("mb");b.textContent="";
+  if(isImg(f)){const i=document.createElement("img");i.src=f.url;b.appendChild(i)}
+  else{const fr=document.createElement("iframe");fr.src=f.url;b.appendChild(fr)}
+  $("modal").classList.remove("hide");
+}
+$("mc").onclick=()=>$("modal").classList.add("hide");
+$("q").oninput=render;
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("act"));b.classList.add("act");tab=b.dataset.t;render()});
+
+async function upload(list){
+  const ok=[...list].filter(f=>isImg(f)||isPdf(f));
+  if(ok.length<list.length)$("st").textContent="Somente PDFs e imagens são aceitos.";
+  for(let i=0;i<ok.length;i++){
+    $("st").textContent="Enviando "+(i+1)+"/"+ok.length+": "+ok[i].name+"…";
+    try{await backend.add(ok[i])}catch(e){$("st").textContent="Falha ao enviar "+ok[i].name;return}
+  }
+  if(ok.length)$("st").textContent="✅ Envio concluído.";
+  refresh();
+}
+$("pick").onclick=()=>$("fi").click();
+$("fi").onchange=e=>{upload(e.target.files);e.target.value=""};
+const dz=$("drop");
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("on")}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("on")}));
+dz.addEventListener("drop",e=>upload(e.dataTransfer.files));
+
+if(ss("ok")==="1")enter();
+</script>
+</body>
+</html>
